@@ -1,37 +1,28 @@
 #define _USE_MATH_DEFINES
 
-#include "RtAudio.h"
 #include <iostream>
-#include <cstdlib>
+#include "RtAudio.h"
 #include <cmath>
  
-// Single-channel sine wave generator.
-int sine( void *buffer, void *inputBuffer, unsigned int bufferSize,
-         double streamTime, RtAudioStreamStatus status, void *data )
+// Two-channel sawtooth wave generator.
+int saw( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
+         double streamTime, RtAudioStreamStatus status, void *userData )
 {
-  //int sine(char *buffer, int bufferSize, void *data)
-  //unsigned int i;
-  //double *buffer = (double *) outputBuffer;
-  //double *lastValues = (double *) userData;
-  unsigned int i;
-  double *my_buffer = (double *) buffer;
-  double *my_data = (double *) data;
+  unsigned int i, j;
+  double *buffer = (double *) outputBuffer;
+  double *lastValues = (double *) userData;
  
   if ( status )
     std::cout << "Stream underflow detected!" << std::endl;
  
   // Write interleaved audio data.
-
-
-  // Write interleaved audio data.
-  for (i=0; i<bufferSize; i++) {
-    //for (j=0; j<2; j++) {
-    *my_buffer++ = my_data[i];
-
-    //my_data[i] += 0.005 * (j+1+(j*0.1));
-    my_data[i] = 6383.0 * sin(i*3000.0*2.0*M_PI/44100);
-     // if (my_data[j] >= 1.0) my_data[j] -= 2.0;
-    //}
+  for ( i=0; i<nBufferFrames; i++ ) {
+    for ( j=0; j<2; j++ ) {
+      *buffer++ = lastValues[j];
+        //lastValues[i] = 6383.0 * sin(i*3000.0*2.0*M_PI/44100)
+      lastValues[j] = 6383.0 * sin(j*3000.0*2.0*M_PI/44100);
+      //if ( lastValues[j] >= 1.0 ) lastValues[j] -= 2.0;
+    }
   }
  
   return 0;
@@ -55,7 +46,7 @@ int main()
   double data[2] = {0, 0};
  
   if ( dac.openStream( &parameters, NULL, RTAUDIO_FLOAT64, sampleRate,
-                       &bufferFrames, &sine, (void *)&data ) ) {
+                       &bufferFrames, &saw, (void *)&data ) ) {
     std::cout << '\n' << dac.getErrorText() << '\n' << std::endl;
     exit( 0 ); // problem with device settings
   }
