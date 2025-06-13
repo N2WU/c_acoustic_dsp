@@ -6,10 +6,11 @@
 #define SLEEP( milliseconds ) usleep( (unsigned long) (milliseconds * 1000.0) )
  
 // Single-Channel Sine Wave generator.
-int saw( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
+int sinewav( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
          double streamTime, RtAudioStreamStatus status, void *userData )
+         // This is RtAudioCallback - you can't change the inputs even if you don't use them
 {
-  unsigned int i;
+  unsigned int i; //, j;
   double *buffer = (double *) outputBuffer;
  
   if ( status )
@@ -41,7 +42,7 @@ int main()
   double data[1] = {0};
  
   if ( dac.openStream( &parameters, NULL, RTAUDIO_FLOAT64, sampleRate,
-                       &bufferFrames, &saw, (void *)&data ) ) {
+                       &bufferFrames, &sinewav, (void *)&data ) ) {
     std::cout << '\n' << dac.getErrorText() << '\n' << std::endl;
     exit( 0 ); // problem with device settings
   }
